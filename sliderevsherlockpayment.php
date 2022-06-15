@@ -213,7 +213,7 @@ This module has been developed by AlexisVS employed in the SLIDE r.e.v society')
                 ),
                 'input' => array(
                     array(
-                        'type' => 'number',
+                        'type' => 'text',
                         'label' => $this->trans('Order states Id for pending order', [], 'Modules.Sliderevsherlockpayment.Sliderevsherlockpayment'),
                         "name" => "SLIDEREVSHERLOCKPAYMENT_ORDER_STATE_ID"
                     ),

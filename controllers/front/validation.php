@@ -76,7 +76,7 @@ class SliderevsherlockpaymentValidationModuleFrontController extends ModuleFront
             "merchantId" => $merchantId,
             "normalReturnUrl" => $normalReturn,
             "orderChannel" => "INTERNET",
-            "transactionReference" => "65198746541894868485776541",
+            "transactionReference" => "61sdfdsfsd485776541",
         ];
 
         $requestTable = generate_the_payment_request($requestData);
@@ -90,6 +90,7 @@ class SliderevsherlockpaymentValidationModuleFrontController extends ModuleFront
 
         $computedResponseSeal = $paymentValidationResponse['computedResponseSeal'];
         $responseTable = $paymentValidationResponse['responseTable'];
+        var_dump($paymentValidationResponse);
         if (strcmp($computedResponseSeal, $responseTable['seal']) == 0) {
             if ($responseTable['redirectionStatusCode'] == 00) {
 //                $this->setTemplate('module:sliderevsherlockpayment/views/templates/front/payment_return.tpl');
@@ -115,7 +116,7 @@ class SliderevsherlockpaymentValidationModuleFrontController extends ModuleFront
             }
         }
 
-        // J'ecrit n'importe sssssssquoi et ce PUTAIN DE MERDE DE VCS NE COMPREND PAS QU4IL Y A UN PT1 DE CHANGEMENT DANS MON FICHIER
+        // J'ecrit n'importe sssssssquoi et ce PUTAIN DE MssdsdERDE DE VCS NE COMPREND PAS QU4IL Y A UN PT1 DE CHANGEMENT DANS MON FICHIER
 
 
         // $mailVars = array(
