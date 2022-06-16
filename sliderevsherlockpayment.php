@@ -214,7 +214,7 @@ This module has been developed by AlexisVS employed in the SLIDE r.e.v society')
                 'input' => array(
                     array(
                         'type' => 'text',
-                        'label' => $this->trans('Order states Id for pending order', [], 'Modules.Sliderevsherlockpayment.Sliderevsherlockpayment'),
+                        'label' => $this->l('Order states Id for pending order'),
                         "name" => "SLIDEREVSHERLOCKPAYMENT_ORDER_STATE_ID"
                     ),
                     array(
