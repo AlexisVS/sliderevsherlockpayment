@@ -36,8 +36,8 @@ class SliderevsherlockpaymentValidationModuleFrontController extends ModuleFront
 
         // Check that this payment option is still available in case the customer changed his address just before the end of the checkout process
         $authorized = false;
-        foreach (Module::getPaymentModules() as $module) {
-            if ($module['name'] == 'sliderevsherlockpayment') {
+        foreach (Module::getPaymentModules() as $module_item) {
+            if ($module_item['name'] == 'sliderevsherlockpayment') {
                 $authorized = true;
                 break;
             }
@@ -58,10 +58,11 @@ class SliderevsherlockpaymentValidationModuleFrontController extends ModuleFront
         }
 
         //Validate Order
+        $amount_paid = number_format($cart->getOrderTotal(), 2, '', '.');
         $module->validateOrder(
             $cart->id,
             Configuration::get('SLIDEREVSHERLOCKPAYMENT_ORDER_STATE_ID'),
-            $cart->getCartTotalPrice(),
+            $amount_paid,
             $this->module->name,
             'sherlockkkk payement valider',
             [],
@@ -70,7 +71,7 @@ class SliderevsherlockpaymentValidationModuleFrontController extends ModuleFront
             $customer->secure_key,
         );
 
-        $this->process_payment();
+        $this->process_payment($customer);
 
         // Définir la request
 
@@ -90,35 +91,40 @@ class SliderevsherlockpaymentValidationModuleFrontController extends ModuleFront
     /**
      * Process the payment on the Sherlock's services
      *
+     * @param $customer
      * @return void
      * @throws PrestaShopException
+     * @throws Exception
      */
-    public function process_payment(): array
+    public function process_payment($customer): void
     {
         $cart = $this->context->cart;
 
         /** @var sliderevsherlockpayment $module */
         $module = Module::getInstanceByName('sliderevsherlockpayment');
 
-        $amount = number_format(((float)$cart->getOrderTotal(true, Cart::BOTH)), 2, '', '.');
+        $amount = number_format(((float)$cart->getOrderTotal()), 2, '', '.');
         $currencyCode = $this->context->currency->iso_code_num;
-        $normalReturn = 'http://slide-prestashop.test/module/sliderevsherlockpayment/validation';
+        $normalReturn = 'http://slide-prestashop.test/index.php?controller=order-confirmation&id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $module->currentOrder . '&key=' . $customer->secure_key;
         true == Configuration::get('SLIDEREVSHERLOCKPAYMENT_TEST_MODE')
             ? $merchantId = Configuration::get('SLIDEREVSHERLOCKPAYMENT_TEST_MERCHANT_ID')
             : $merchantId = Configuration::get('SLIDEREVSHERLOCKPAYMENT_MERCHANT_ID');
-        $referenceOrder = $module->currentOrderReference;
+
+        true == Configuration::get('SLIDEREVSHERLOCKPAYMENT_TEST_MODE')
+            ? $referenceOrder = 'SLIDEREV' . $module->currentOrderReference
+            : $referenceOrder = $module->currentOrderReference;
 
         // ! Les champs de la request doivent être ranger par ordre alphabétique
         $requestData = [
             "amount" => $amount,
-            "captureDay" => "0",
-            "captureMode" => "AUTHOR_CAPTURE",
             "currencyCode" => $currencyCode,
             "interfaceVersion" => "IR_WS_2.42",
             "merchantId" => $merchantId,
             "normalReturnUrl" => $normalReturn,
             "orderChannel" => "INTERNET",
             "transactionReference" => $referenceOrder,
+            "captureDay" => "0",
+            "captureMode" => "AUTHOR_CAPTURE",
         ];
 
         $requestTable = generate_the_payment_request($requestData);
@@ -132,11 +138,15 @@ class SliderevsherlockpaymentValidationModuleFrontController extends ModuleFront
         $responseTable = $paymentValidationResponse['responseTable'];
         if (strcmp($computedResponseSeal, $responseTable['seal']) == 0) {
             if ($responseTable['redirectionStatusCode'] == 00) {
-                Tools::redirect($responseTable['redirectionStatusCode'],);
+                $this->context->smarty->assign([
+                    'redirectionUrl' => $responseTable['redirectionUrl'],
+                    'redirectionVersion' => $responseTable['redirectionVersion'],
+                    'redirectionData' => $responseTable['redirectionData']
+                ]);
+                $this->setTemplate('module:sliderevsherlockpayment/views/templates/front/redirection_form.tpl');
             } else {
                 $this->setTemplate('module:sliderevsherlockpayment/views/templates/front/payment_error.tpl');
             }
         }
     }
-
 }
