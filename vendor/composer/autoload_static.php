@@ -27,7 +27,8 @@ class ComposerStaticInit034eb5dc437fcee197c71b102aabd6d6
 
     public static $classMap = array (
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
-        'SealCalculation' => __DIR__ . '/../..' . '/sips-paypage-json-php/Common/sealCalculationPaypageJson.php',
+        'classes\\paymentRequest' => __DIR__ . '/../..' . '/classes/paymentRequest.php',
+        'classes\\sealCalculation' => __DIR__ . '/../..' . '/classes/sealCalculation.php',
     );
 
     public static function getInitializer(ClassLoader $loader)

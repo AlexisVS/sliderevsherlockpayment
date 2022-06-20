@@ -17,7 +17,8 @@
     },
     "classmap": [
       "sips-paypage-json-php/",
-      "sips-paypage-json-php/common/"
+      "sips-paypage-json-php/common/",
+      "classes/"
     ],
     "exclude-from-classmap": []
   },

@@ -7,5 +7,6 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'Composer\\InstalledVersions' => $vendorDir . '/composer/InstalledVersions.php',
-    'SealCalculation' => $baseDir . '/sips-paypage-json-php/Common/sealCalculationPaypageJson.php',
+    'classes\\paymentRequest' => $baseDir . '/classes/paymentRequest.php',
+    'classes\\sealCalculation' => $baseDir . '/classes/sealCalculation.php',
 );

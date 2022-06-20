@@ -5,7 +5,10 @@
  * <FileName> => validation.php
  * Format expected: SliderevsherlockpaymentValidationModuleFrontController
  */
-include(dirname(__FILE__) . '/../../sips-paypage-json-php/Common/paymentRequest.php');
+
+//include(dirname(__FILE__) . '/../../sips-paypage-json-php/Common/paymentRequest.php');
+
+use classes\paymentRequest;
 
 class SliderevsherlockpaymentValidationModuleFrontController extends ModuleFrontController
 {
@@ -64,7 +67,7 @@ class SliderevsherlockpaymentValidationModuleFrontController extends ModuleFront
             Configuration::get('SLIDEREVSHERLOCKPAYMENT_ORDER_STATE_ID'),
             $amount_paid,
             $this->module->name,
-            'sherlockkkk payement valider',
+            'sherlock\'s payement valider',
             [],
             null,
             false,
@@ -72,70 +75,23 @@ class SliderevsherlockpaymentValidationModuleFrontController extends ModuleFront
         );
 
         $this->process_payment($customer);
-
-        // Définir la request
-
-        // J'ecrit n'importe sssssssquoi et ce PUTAIN DE MssdsdERDE DE VCS NE COMPREND PAS QU4IL Y A UN PT1 DE CHANGEMENT DANS MON FICHIER
-
-
-        // $mailVars = array(
-        //     '{bankwire_owner}' => Configuration::get('BANK_WIRE_OWNER'),
-        //     '{bankwire_details}' => nl2br(Configuration::get('BANK_WIRE_DETAILS')),
-        //     '{bankwire_address}' => nl2br(Configuration::get('BANK_WIRE_ADDRESS'))
-        // );
-
-//         $this->module->validateOrder($cart->id, Configuration::get('PS_OS_BANKWIRE'), $total, $this->module->displayName, NULL, $mailVars, (int)$currency->id, false, $customer->secure_key);
-        // Tools::redirect('index.php?controller=order-confirmation&id_cart='.$cart->id.'&id_module='.$this->module->id.'&id_order='.$this->module->currentOrder.'&key='.$customer->secure_key);
     }
 
     /**
      * Process the payment on the Sherlock's services
      *
-     * @param $customer
+     * @param Customer $customer
      * @return void
      * @throws PrestaShopException
      * @throws Exception
      */
-    public function process_payment($customer): void
+    public function process_payment(Customer $customer): void
     {
-        $cart = $this->context->cart;
-
-        /** @var sliderevsherlockpayment $module */
-        $module = Module::getInstanceByName('sliderevsherlockpayment');
-
-        $amount = number_format(((float)$cart->getOrderTotal()), 2, '', '.');
-        $currencyCode = $this->context->currency->iso_code_num;
-        $normalReturn = 'http://slide-prestashop.test/index.php?controller=order-confirmation&id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $module->currentOrder . '&key=' . $customer->secure_key;
-        true == Configuration::get('SLIDEREVSHERLOCKPAYMENT_TEST_MODE')
-            ? $merchantId = Configuration::get('SLIDEREVSHERLOCKPAYMENT_TEST_MERCHANT_ID')
-            : $merchantId = Configuration::get('SLIDEREVSHERLOCKPAYMENT_MERCHANT_ID');
-
-        true == Configuration::get('SLIDEREVSHERLOCKPAYMENT_TEST_MODE')
-            ? $referenceOrder = 'SLIDEREV' . $module->currentOrderReference
-            : $referenceOrder = $module->currentOrderReference;
-
-        // ! Les champs de la request doivent être ranger par ordre alphabétique
-        $requestData = [
-            "amount" => $amount,
-            "currencyCode" => $currencyCode,
-            "interfaceVersion" => "IR_WS_2.42",
-            "merchantId" => $merchantId,
-            "normalReturnUrl" => $normalReturn,
-            "orderChannel" => "INTERNET",
-            "transactionReference" => $referenceOrder,
-            "captureDay" => "0",
-            "captureMode" => "AUTHOR_CAPTURE",
-        ];
-
-        $requestTable = generate_the_payment_request($requestData);
-        true == Configuration::get('SLIDEREVSHERLOCKPAYMENT_TEST_MODE')
-            ? $urlForPaymentInitialisation = Configuration::get('SLIDEREVSHERLOCKPAYMENT_POST_REQUEST_DEV_MODE')
-            : $urlForPaymentInitialisation = Configuration::get('SLIDEREVSHERLOCKPAYMENT_POST_REQUEST_PROD_MODE');
-
-        $paymentValidationResponse = send_payment_request($requestTable, $urlForPaymentInitialisation);
+        $paymentValidationResponse = $this->process_payment_request($customer);
 
         $computedResponseSeal = $paymentValidationResponse['computedResponseSeal'];
         $responseTable = $paymentValidationResponse['responseTable'];
+
         if (strcmp($computedResponseSeal, $responseTable['seal']) == 0) {
             if ($responseTable['redirectionStatusCode'] == 00) {
                 $this->context->smarty->assign([
@@ -148,5 +104,66 @@ class SliderevsherlockpaymentValidationModuleFrontController extends ModuleFront
                 $this->setTemplate('module:sliderevsherlockpayment/views/templates/front/payment_error.tpl');
             }
         }
+    }
+
+    /**
+     * Process payment request
+     * @param $customer
+     * @return array
+     * @throws Exception
+     */
+    private function process_payment_request($customer): array
+    {
+        /** @var $paymentRequest $paymentRequest */
+        $paymentRequest = new paymentRequest();
+
+        $requestData = $this->make_request_payment_request($customer);
+
+        $requestTable = $paymentRequest->generate_the_payment_request($requestData);
+        true == Configuration::get('SLIDEREVSHERLOCKPAYMENT_TEST_MODE')
+            ? $urlForPaymentInitialisation = Configuration::get('SLIDEREVSHERLOCKPAYMENT_POST_REQUEST_DEV_MODE')
+            : $urlForPaymentInitialisation = Configuration::get('SLIDEREVSHERLOCKPAYMENT_POST_REQUEST_PROD_MODE');
+
+        return $paymentRequest->send_payment_request($requestTable, $urlForPaymentInitialisation);
+    }
+
+    /**
+     * Generate the request for sending payment request
+     *
+     * @param $customer
+     * @return array
+     * @throws Exception
+     */
+    private function make_request_payment_request($customer): array
+    {
+        $cart = $this->context->cart;
+
+        /** @var sliderevsherlockpayment $module */
+        $module = Module::getInstanceByName('sliderevsherlockpayment');
+
+
+        $amount = number_format(((float)$cart->getOrderTotal()), 2, '', '.');
+        $currencyCode = $this->context->currency->iso_code_num;
+        $normalReturn = 'http://slide-prestashop.test/index.php?controller=order-confirmation&id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $module->currentOrder . '&key=' . $customer->secure_key;
+        true == Configuration::get('SLIDEREVSHERLOCKPAYMENT_TEST_MODE')
+            ? $merchantId = Configuration::get('SLIDEREVSHERLOCKPAYMENT_TEST_MERCHANT_ID')
+            : $merchantId = Configuration::get('SLIDEREVSHERLOCKPAYMENT_MERCHANT_ID');
+
+        true == Configuration::get('SLIDEREVSHERLOCKPAYMENT_TEST_MODE')
+            ? $referenceOrder = 'SLIDEREV' . $module->currentOrderReference
+            : $referenceOrder = $module->currentOrderReference;
+
+        // ! Les champs de la request doivent être ranger par ordre alphabétique mise à part les captures
+        return [
+            "amount" => $amount,
+            "currencyCode" => $currencyCode,
+            "interfaceVersion" => "IR_WS_2.42",
+            "merchantId" => $merchantId,
+            "normalReturnUrl" => $normalReturn,
+            "orderChannel" => "INTERNET",
+            "transactionReference" => $referenceOrder,
+            "captureDay" => "0",
+            "captureMode" => "AUTHOR_CAPTURE",
+        ];
     }
 }
