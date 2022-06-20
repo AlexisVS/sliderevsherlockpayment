@@ -52,6 +52,7 @@ class Sliderevsherlockpayment extends PaymentModule
         $this->version = '0.0.3';
         $this->author = 'AlexisVS';
         $this->need_instance = 0;
+        $this->controllers = ['paymentResponse', 'validation'];
 
         /**
          * Set $this->bootstrap to true if your module is compliant with bootstrap (PrestaShop 1.6)

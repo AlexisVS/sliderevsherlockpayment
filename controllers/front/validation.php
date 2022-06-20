@@ -142,7 +142,9 @@ class SliderevsherlockpaymentValidationModuleFrontController extends ModuleFront
 
         $amount = number_format(((float)$cart->getOrderTotal()), 2, '', '.');
         $currencyCode = $this->context->currency->iso_code_num;
-        $normalReturn = 'http://slide-prestashop.test/index.php?controller=order-confirmation&id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $module->currentOrder . '&key=' . $customer->secure_key;
+//        $normalReturn = 'http://slide-prestashop.test/index.php?controller=order-confirmation&id_cart=' . $cart->id
+//            . '&id_module=' . $this->module->id . '&id_order=' . $module->currentOrder . '&key=' . $customer->secure_key;
+        $normalReturn = $this->context->link->getModuleLink($module->name, 'paymentResponse');
         true == Configuration::get('SLIDEREVSHERLOCKPAYMENT_TEST_MODE')
             ? $merchantId = Configuration::get('SLIDEREVSHERLOCKPAYMENT_TEST_MERCHANT_ID')
             : $merchantId = Configuration::get('SLIDEREVSHERLOCKPAYMENT_MERCHANT_ID');
