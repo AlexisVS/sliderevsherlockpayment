@@ -6,8 +6,6 @@
  * Format expected: SliderevsherlockpaymentValidationModuleFrontController
  */
 
-//include(dirname(__FILE__) . '/../../sips-paypage-json-php/Common/paymentRequest.php');
-
 use classes\paymentRequest;
 
 class SliderevsherlockpaymentValidationModuleFrontController extends ModuleFrontController

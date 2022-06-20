@@ -202,9 +202,11 @@ This module has been developed by AlexisVS employed in the SLIDE r.e.v society')
 
     /**
      * Create the structure of your form.
+     * @throws PrestaShopDatabaseException
      */
     protected function getConfigForm(): array
     {
+        $options = $this->get_options_orderState_config_form();
         return array(
             'form' => array(
                 'legend' => array(
@@ -213,9 +215,15 @@ This module has been developed by AlexisVS employed in the SLIDE r.e.v society')
                 ),
                 'input' => array(
                     array(
-                        'type' => 'text',
-                        'label' => $this->l('Order states Id for pending order'),
-                        "name" => "SLIDEREVSHERLOCKPAYMENT_ORDER_STATE_ID"
+                        'type' => 'select',
+                        'label' => $this->l('Choose order states for pending order'),
+                        'name' => 'SLIDEREVSHERLOCKPAYMENT_ORDER_STATE_ID',
+                        'required' => true,
+                        'options' => array(
+                            'query' => $options,
+                            'id' => 'id_order_state',
+                            'name' => 'name'
+                        )
                     ),
                     array(
                         'type' => 'switch',
@@ -287,6 +295,19 @@ This module has been developed by AlexisVS employed in the SLIDE r.e.v society')
                 ),
             ),
         );
+    }
+
+
+    /**
+     * Get options for OrderState input in configForm
+     * @throws PrestaShopDatabaseException
+     */
+    private function get_options_orderState_config_form()
+    {
+        $db = Db::getInstance(_PS_USE_SQL_SLAVE_);
+
+        return $db->executeS('SELECT * FROM ' . _DB_PREFIX_ . 'order_state_lang WHERE id_lang = 1');
+
     }
 
     /**
@@ -371,4 +392,5 @@ This module has been developed by AlexisVS employed in the SLIDE r.e.v society')
     {
         /* Place your code here. */
     }
+
 }

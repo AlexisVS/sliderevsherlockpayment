@@ -16,8 +16,6 @@
       "PrestaShop\\Module\\slidesherlockpayment\\sipspaypagejsonphp\\common\\": "sips-paypage-json-php/Common/"
     },
     "classmap": [
-      "sips-paypage-json-php/",
-      "sips-paypage-json-php/common/",
       "classes/"
     ],
     "exclude-from-classmap": []
