@@ -32,13 +32,6 @@ if (!defined('_PS_VERSION_')) {
 
 class Sliderevsherlockpayment extends PaymentModule
 {
-    /**
-     * My custom attribute for getting order State
-     * @var int $orderStateCustom
-     */
-    public int $orderStateCustom;
-
-
     protected bool $config_form = false;
     /**
      * @var string[]
@@ -49,7 +42,7 @@ class Sliderevsherlockpayment extends PaymentModule
     {
         $this->name = 'sliderevsherlockpayment';
         $this->tab = 'payments_gateways';
-        $this->version = '0.0.3';
+        $this->version = '0.0.4';
         $this->author = 'AlexisVS';
         $this->need_instance = 0;
         $this->controllers = ['paymentResponse', 'validation'];
@@ -92,7 +85,7 @@ This module has been developed by AlexisVS employed in the SLIDE r.e.v society')
             return false;
         }
 
-        Configuration::updateValue('SLIDEREVSHERLOCKPAYMENT_ORDER_STATE_ID', 10);
+        Configuration::updateValue('SLIDEREVSHERLOCKPAYMENT_ORDER_STATE_PENDING_ID', 10);
         Configuration::updateValue('SLIDEREVSHERLOCKPAYMENT_TEST_MODE', false);
         Configuration::updateValue('SLIDEREVSHERLOCKPAYMENT_TEST_MERCHANT_ID', '002016000000001');
         Configuration::updateValue('SLIDEREVSHERLOCKPAYMENT_TEST_SECRET_KEY', '002016000000001_KEY1');
@@ -101,12 +94,12 @@ This module has been developed by AlexisVS employed in the SLIDE r.e.v society')
 //        Configuration::updateValue('SLIDEREVSHERLOCKPAYMENT_SECRET_KEY', '');
 //        Configuration::updateValue('SLIDEREVSHERLOCKPAYMENT_KEY_VERSION', '');
 
-        return parent::install() &&
-            $this->registerHook('header') &&
-            $this->registerHook('backOfficeHeader') &&
-            $this->registerHook('paymentOptions') &&
-            $this->registerHook('actionPaymentConfirmation') &&
-            $this->registerHook('displayPayment');
+        return parent::install()
+            && $this->registerHook('header')
+            && $this->registerHook('backOfficeHeader')
+            && $this->registerHook('paymentOptions')
+            && $this->registerHook('actionPaymentConfirmation')
+            && $this->registerHook('displayPayment');
     }
 
     public function uninstall(): bool
@@ -160,7 +153,7 @@ This module has been developed by AlexisVS employed in the SLIDE r.e.v society')
     protected function getConfigFormValues(): array
     {
         return array(
-            'SLIDEREVSHERLOCKPAYMENT_ORDER_STATE_ID' => Configuration::get('SLIDEREVSHERLOCKPAYMENT_ORDER_STATE_ID'),
+            'SLIDEREVSHERLOCKPAYMENT_ORDER_STATE_PENDING_ID' => Configuration::get('SLIDEREVSHERLOCKPAYMENT_ORDER_STATE_PENDING_ID'),
             'SLIDEREVSHERLOCKPAYMENT_TEST_MODE' => Configuration::get('SLIDEREVSHERLOCKPAYMENT_TEST_MODE'),
             'SLIDEREVSHERLOCKPAYMENT_TEST_MERCHANT_ID' => Configuration::get('SLIDEREVSHERLOCKPAYMENT_TEST_MERCHANT_ID'),
             'SLIDEREVSHERLOCKPAYMENT_TEST_SECRET_KEY' => Configuration::get('SLIDEREVSHERLOCKPAYMENT_TEST_SECRET_KEY'),
@@ -218,13 +211,13 @@ This module has been developed by AlexisVS employed in the SLIDE r.e.v society')
                     array(
                         'type' => 'select',
                         'label' => $this->l('Choose order states for pending order'),
-                        'name' => 'SLIDEREVSHERLOCKPAYMENT_ORDER_STATE_ID',
+                        'name' => 'SLIDEREVSHERLOCKPAYMENT_ORDER_STATE_PENDING_ID',
                         'required' => true,
                         'options' => array(
                             'query' => $options,
                             'id' => 'id_order_state',
                             'name' => 'name'
-                        )
+                        ),
                     ),
                     array(
                         'type' => 'switch',
@@ -294,10 +287,9 @@ This module has been developed by AlexisVS employed in the SLIDE r.e.v society')
                 'submit' => array(
                     'title' => $this->l('Save'),
                 ),
-            ),
+            )
         );
     }
-
 
     /**
      * Get options for OrderState input in configForm
@@ -351,8 +343,9 @@ This module has been developed by AlexisVS employed in the SLIDE r.e.v society')
             ->setCallToActionText($this->l('sherlock payment'))
             ->setLogo($this->getPathUri() . 'logo.png')
 
+
             // Action in /controllers/front/validation
-            ->setAction($this->context->link->getModuleLink($this->name, 'validation', array("currentOrderReference" => $this->currentOrderReference), true));
+            ->setAction($this->context->link->getModuleLink($this->name, 'validation', [], true));
         /* TODO:: If does add additional input in payment button form
               ->setInputs([
                     'token' => [

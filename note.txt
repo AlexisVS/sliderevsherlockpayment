@@ -1,5 +1,2 @@
-TODO: 1. Mettre un select pour l'OrderState
-TODO: 2. Trouver comment renvoyer le client vers Payment success après le success de son payment
-TODO: 3. Mettre a jour l'order si la commande a réussis
 TODO: 4. Gestion des erreurs avant envoie avec mis a jour de l'orderState ou annulation ça depend de l'erreur ( je pense )
 TODO: 5. Gestion des erreurs après envoie avec mis a jour de l'orderState ou annulation ça depend de l'erreur ( je pense )

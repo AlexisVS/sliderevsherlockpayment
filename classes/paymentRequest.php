@@ -45,7 +45,6 @@ class paymentRequest
         $requestJson = json_encode($requestTable, JSON_UNESCAPED_UNICODE, '512');
 
         //SENDING OF THE PAYMENT REQUEST
-
         $option = array(
             'http' => array(
                 'method' => 'POST',
@@ -63,16 +62,12 @@ class paymentRequest
             if (strcasecmp($key, "seal") != 0) {
                 $responseData[$key] = $value;
             }
-            //store responseTable in session to access responseData from other pages
-//        $_SESSION[$key] = $value;
         }
 
         true == Configuration::get('SLIDEREVSHERLOCKPAYMENT_TEST_MODE')
             ? $secretKey = Configuration::get('SLIDEREVSHERLOCKPAYMENT_TEST_SECRET_KEY')
             : $secretKey = Configuration::get('SLIDEREVSHERLOCKPAYMENT_SECRET_KEY');
 
-
-//   return $computedResponseSeal;
         $computedResponseSeal = $this->sealCalculation->compute_payment_init_seal("HMAC-SHA-256", $responseData, $secretKey);
 
         return [

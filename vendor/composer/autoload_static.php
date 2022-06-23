@@ -6,36 +6,17 @@ namespace Composer\Autoload;
 
 class ComposerStaticInit034eb5dc437fcee197c71b102aabd6d6
 {
-    public static $prefixLengthsPsr4 = array (
-        'P' => 
-        array (
-            'PrestaShop\\Module\\slidesherlockpayment\\sipspaypagejsonphp\\common\\' => 65,
-            'PrestaShop\\Module\\slidesherlockpayment\\sipspaypagejsonphp\\' => 58,
-        ),
-    );
-
-    public static $prefixDirsPsr4 = array (
-        'PrestaShop\\Module\\slidesherlockpayment\\sipspaypagejsonphp\\common\\' => 
-        array (
-            0 => __DIR__ . '/../..' . '/sips-paypage-json-php/Common',
-        ),
-        'PrestaShop\\Module\\slidesherlockpayment\\sipspaypagejsonphp\\' => 
-        array (
-            0 => __DIR__ . '/../..' . '/sips-paypage-json-php',
-        ),
-    );
-
     public static $classMap = array (
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
+        'PrestaShop\\Module\\sliderevsherlockpayment\\Exception\\sliderevsherlockpaymentException' => __DIR__ . '/../..' . '/src/exceptions/sliderevsherlockpaymentException.php',
         'classes\\paymentRequest' => __DIR__ . '/../..' . '/classes/paymentRequest.php',
+        'classes\\paymentResponse' => __DIR__ . '/../..' . '/classes/paymentResponse.php',
         'classes\\sealCalculation' => __DIR__ . '/../..' . '/classes/sealCalculation.php',
     );
 
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit034eb5dc437fcee197c71b102aabd6d6::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit034eb5dc437fcee197c71b102aabd6d6::$prefixDirsPsr4;
             $loader->classMap = ComposerStaticInit034eb5dc437fcee197c71b102aabd6d6::$classMap;
 
         }, null, ClassLoader::class);
