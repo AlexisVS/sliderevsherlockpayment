@@ -11,7 +11,7 @@ use PrestaShop\Module\sliderevsherlockpayment\Exception\sliderevsherlockpaymentE
 
 class SliderevsherlockpaymentValidationModuleFrontController extends ModuleFrontController
 {
-    public function __construct()
+    public function __construct($abaeille)
     {
         parent::__construct();
     }
@@ -24,13 +24,13 @@ class SliderevsherlockpaymentValidationModuleFrontController extends ModuleFront
     public function postProcess()
     {
         $cart = $this->context->cart;
-        if (false === Validate::isLoadedObject($this->context->cart)) {
+        if (!Validate::isLoadedObject($cart)) {
             throw new sliderevsherlockpaymentException('No cart found', sliderevsherlockpaymentException::PRESTASHOP_CART_NOT_FOUND);
         }
 
         /** @var sliderevsherlockpayment $module */
         $module = Module::getInstanceByName("sliderevsherlockpayment");
-        if (false === Validate::isLoadedObject($module)) {
+        if (!Validate::isLoadedObject($module)) {
             throw new sliderevsherlockpaymentException('No module found', sliderevsherlockpaymentException::PRESTASHOP_MODULE_NOT_FOUND);
         }
 
@@ -140,9 +140,15 @@ class SliderevsherlockpaymentValidationModuleFrontController extends ModuleFront
     private function make_request_payment_request(): array
     {
         $cart = $this->context->cart;
+        if (!Validate::isLoadedObject($cart)) {
+            throw new sliderevsherlockpaymentException('No cart found', sliderevsherlockpaymentException::PRESTASHOP_CART_NOT_FOUND);
+        }
 
         /** @var sliderevsherlockpayment $module */
         $module = Module::getInstanceByName('sliderevsherlockpayment');
+        if (!Validate::isLoadedObject($module)) {
+            throw new sliderevsherlockpaymentException('No module found', sliderevsherlockpaymentException::PRESTASHOP_MODULE_NOT_FOUND);
+        }
 
         $amount = number_format(((float)$cart->getOrderTotal()), 2, '', '.');
         $currencyCode = $this->context->currency->iso_code_num;
@@ -150,8 +156,8 @@ class SliderevsherlockpaymentValidationModuleFrontController extends ModuleFront
         $params = [
             'id_cart' => $cart->id,
         ];
-
         $normalReturn = $this->context->link->getModuleLink($module->name, 'paymentResponse', $params);
+
         true == Configuration::get('SLIDEREVSHERLOCKPAYMENT_TEST_MODE')
             ? $merchantId = Configuration::get('SLIDEREVSHERLOCKPAYMENT_TEST_MERCHANT_ID')
             : $merchantId = Configuration::get('SLIDEREVSHERLOCKPAYMENT_MERCHANT_ID');
@@ -160,8 +166,8 @@ class SliderevsherlockpaymentValidationModuleFrontController extends ModuleFront
             ? $referenceOrder = 'SLIDEREV' . $module->currentOrderReference
             : $referenceOrder = $module->currentOrderReference;
 
-        // ! Les champs de la request doivent être ranger par ordre alphabétique mise à part les captures
 
+        // ! Les champs de la request doivent être ranger par ordre alphabétique mise à part les captures
         return [
             "amount" => $amount,
             "currencyCode" => $currencyCode,
@@ -170,6 +176,7 @@ class SliderevsherlockpaymentValidationModuleFrontController extends ModuleFront
             "normalReturnUrl" => $normalReturn,
             "orderChannel" => "INTERNET",
             "transactionReference" => $referenceOrder,
+
             "captureDay" => "0",
             "captureMode" => "AUTHOR_CAPTURE",
         ];
