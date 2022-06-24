@@ -62,10 +62,10 @@ class SliderevsherlockpaymentValidationModuleFrontController extends ModuleFront
         }
 
         //Validate Order
-        $amount_paid = number_format($cart->getOrderTotal(), 2, '', '.');
+        $amount_paid = $cart->getOrderTotal();
         $module->validateOrder(
             $cart->id,
-            Configuration::get('SLIDEREVSHERLOCKPAYMENT_ORDER_STATE_PENDING_ID'),
+            intval(Configuration::get('SLIDEREVSHERLOCKPAYMENT_ORDER_STATE_PENDING_ID')),
             $amount_paid,
             $module->name,
             'sherlock\'s payement valider',
@@ -161,6 +161,7 @@ class SliderevsherlockpaymentValidationModuleFrontController extends ModuleFront
             : $referenceOrder = $module->currentOrderReference;
 
         // ! Les champs de la request doivent être ranger par ordre alphabétique mise à part les captures
+
         return [
             "amount" => $amount,
             "currencyCode" => $currencyCode,

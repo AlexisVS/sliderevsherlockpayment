@@ -1,2 +1,0 @@
-TODO: 4. Gestion des erreurs avant envoie avec mis a jour de l'orderState ou annulation ça depend de l'erreur ( je pense )
-TODO: 5. Gestion des erreurs après envoie avec mis a jour de l'orderState ou annulation ça depend de l'erreur ( je pense )

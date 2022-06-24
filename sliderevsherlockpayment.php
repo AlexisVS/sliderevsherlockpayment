@@ -59,8 +59,7 @@ class Sliderevsherlockpayment extends PaymentModule
 
 This module has been developed by AlexisVS employed in the SLIDE r.e.v society');
 
-        // TODO: Apres faire en sorte de ne pas limiter les countries
-        $this->limited_countries = array('FR');
+        $this->limited_countries = [];
 
         $this->limited_currencies = array('EUR');
 
