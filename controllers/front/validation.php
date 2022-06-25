@@ -11,7 +11,7 @@ use PrestaShop\Module\sliderevsherlockpayment\Exception\sliderevsherlockpaymentE
 
 class SliderevsherlockpaymentValidationModuleFrontController extends ModuleFrontController
 {
-    public function __construct($abaeille)
+    public function __construct()
     {
         parent::__construct();
     }
@@ -91,8 +91,6 @@ class SliderevsherlockpaymentValidationModuleFrontController extends ModuleFront
         $computedResponseSeal = $paymentValidationResponse['computedResponseSeal'];
         $responseTable = $paymentValidationResponse['responseTable'];
 
-        dump($responseTable);
-
         if (strcmp($computedResponseSeal, $responseTable['seal']) == 0) {
             if ($responseTable['redirectionStatusCode'] == '00') {
                 $this->context->smarty->assign([
@@ -125,9 +123,9 @@ class SliderevsherlockpaymentValidationModuleFrontController extends ModuleFront
 
         $requestData = $this->make_request_payment_request();
 
-        $requestTable = $paymentRequest->generate_the_payment_request($requestData);
 
-        dump($requestTable);
+        $requestTable = $paymentRequest->generate_the_payment_request($requestData);
+        dump($requestTable, $requestData);
         true == Configuration::get('SLIDEREVSHERLOCKPAYMENT_TEST_MODE')
             ? $urlForPaymentInitialisation = Configuration::get('SLIDEREVSHERLOCKPAYMENT_POST_REQUEST_DEV_MODE')
             : $urlForPaymentInitialisation = Configuration::get('SLIDEREVSHERLOCKPAYMENT_POST_REQUEST_PROD_MODE');
@@ -186,6 +184,7 @@ class SliderevsherlockpaymentValidationModuleFrontController extends ModuleFront
 
         $productsDetails = $this->get_cart_products_details($order);
 
+
         // ! Les champs de la request doivent être ranger par ordre alphabétique mise à part les captures
         return [
             "amount" => $amount,
@@ -198,7 +197,7 @@ class SliderevsherlockpaymentValidationModuleFrontController extends ModuleFront
             "customerAddress" => [
                 "addressAdditional1" => $customerAddress['address1'],
                 "city" => $customerAddress['city'],
-                "country" => $customerAddress['country'],
+                "country" => strtoupper(substr($customerAddress['country'], 0, 3)),
                 "state" => $customerState,
                 "zipCode" => $customerAddress['postcode'],
             ],
@@ -226,14 +225,23 @@ class SliderevsherlockpaymentValidationModuleFrontController extends ModuleFront
     {
         $products = $order->getProductsDetail();
         $productsDetails = [];
+
         foreach ($products as $product) {
-            $productsDetails['shoppingCartItem'][] = [
-                "productName" => $product['product_name'],
-                "productQuantity" => $product['product_quantity'],
-                "productCode" => $product['product_reference'],
+            $productsDetails[] = [
+                "productName" => $this->format_string_ANU_255($product['product_name']),
+                "productQuantity" => intval($product['product_quantity']),
+                "productCode" => $this->format_string_ANU_255($product['product_reference']),
             ];
         }
         return $productsDetails;
+    }
+
+    /**
+     * Format string ANU-255 characters
+     */
+    final private function format_string_ANU_255(string $string): string
+    {
+        return preg_replace('/\W+/', ' ', $string);
     }
 
     /**
