@@ -43,7 +43,6 @@ class paymentRequest
     function send_payment_request($requestTable, $urlForPaymentInitialisation): array
     {
         $requestJson = json_encode($requestTable, JSON_UNESCAPED_UNICODE, '512');
-
         //SENDING OF THE PAYMENT REQUEST
         $option = array(
             'http' => array(

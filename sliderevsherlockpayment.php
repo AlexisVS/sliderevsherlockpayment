@@ -59,11 +59,26 @@ class Sliderevsherlockpayment extends PaymentModule
 
 This module has been developed by AlexisVS employed in the SLIDE r.e.v society');
 
-        $this->limited_countries = [];
+        $this->limited_countries = $this->get_iso_code_countries_europe();
 
         $this->limited_currencies = array('EUR');
 
         $this->ps_versions_compliancy = array('min' => '1.7', 'max' => _PS_VERSION_);
+    }
+
+    /**
+     * Get all iso code countries from the Europe.
+     *
+     * @return string[]
+     */
+    final private function get_iso_code_countries_europe(): array
+    {
+        $limited_countries = [];
+        $europeanCountries = Country::getCountriesByZoneId(Country::getIdZone($this->context->country->id), $this->context->language->id);
+        foreach ($europeanCountries as $country) {
+            $limited_countries[] = $country['iso_code'];
+        }
+        return $limited_countries;
     }
 
     /**

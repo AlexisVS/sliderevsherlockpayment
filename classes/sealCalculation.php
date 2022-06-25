@@ -45,7 +45,7 @@ class sealCalculation
         ksort($table);
         foreach ($table as $key => $value) {
             if (is_array($value)) {
-                $value = recursive_table_sort($value);
+                $value = $this->recursive_table_sort($value);
                 $table[$key] = $value;
             }
         }

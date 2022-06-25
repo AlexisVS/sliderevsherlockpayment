@@ -91,6 +91,8 @@ class SliderevsherlockpaymentValidationModuleFrontController extends ModuleFront
         $computedResponseSeal = $paymentValidationResponse['computedResponseSeal'];
         $responseTable = $paymentValidationResponse['responseTable'];
 
+        dump($responseTable);
+
         if (strcmp($computedResponseSeal, $responseTable['seal']) == 0) {
             if ($responseTable['redirectionStatusCode'] == '00') {
                 $this->context->smarty->assign([
@@ -124,6 +126,8 @@ class SliderevsherlockpaymentValidationModuleFrontController extends ModuleFront
         $requestData = $this->make_request_payment_request();
 
         $requestTable = $paymentRequest->generate_the_payment_request($requestData);
+
+        dump($requestTable);
         true == Configuration::get('SLIDEREVSHERLOCKPAYMENT_TEST_MODE')
             ? $urlForPaymentInitialisation = Configuration::get('SLIDEREVSHERLOCKPAYMENT_POST_REQUEST_DEV_MODE')
             : $urlForPaymentInitialisation = Configuration::get('SLIDEREVSHERLOCKPAYMENT_POST_REQUEST_PROD_MODE');
@@ -150,6 +154,11 @@ class SliderevsherlockpaymentValidationModuleFrontController extends ModuleFront
             throw new sliderevsherlockpaymentException('No module found', sliderevsherlockpaymentException::PRESTASHOP_MODULE_NOT_FOUND);
         }
 
+        $customer = new Customer($cart->id_customer);
+        if (!Validate::isLoadedObject($customer)) {
+            throw new sliderevsherlockpaymentException('No customer found', sliderevsherlockpaymentException::PRESTASHOP_CUSTOMER_NOT_FOUND);
+        }
+
         $amount = number_format(((float)$cart->getOrderTotal()), 2, '', '.');
         $currencyCode = $this->context->currency->iso_code_num;
 
@@ -166,6 +175,16 @@ class SliderevsherlockpaymentValidationModuleFrontController extends ModuleFront
             ? $referenceOrder = 'SLIDEREV' . $module->currentOrderReference
             : $referenceOrder = $module->currentOrderReference;
 
+        $customerAddress = $customer->getAddresses($cart->id_lang);
+        $customerAddress = $customerAddress[0];
+
+        $customerAddress['state'] != null
+            ? $customerState = $customerAddress['state']
+            : $customerState = '';
+
+        $order = new Order($module->currentOrder, $cart->id_lang);
+
+        $productsDetails = $this->get_cart_products_details($order);
 
         // ! Les champs de la request doivent être ranger par ordre alphabétique mise à part les captures
         return [
@@ -176,10 +195,45 @@ class SliderevsherlockpaymentValidationModuleFrontController extends ModuleFront
             "normalReturnUrl" => $normalReturn,
             "orderChannel" => "INTERNET",
             "transactionReference" => $referenceOrder,
-
+            "customerAddress" => [
+                "addressAdditional1" => $customerAddress['address1'],
+                "city" => $customerAddress['city'],
+                "country" => $customerAddress['country'],
+                "state" => $customerState,
+                "zipCode" => $customerAddress['postcode'],
+            ],
+            "customerContact" => [
+                "email" => $customer->email,
+                "firstname" => $customer->firstname,
+                "lastname" => $customer->lastname,
+            ],
+            "orderId" => $module->currentOrder,
+            "shoppingCartDetail" => [
+                "shoppingCartItemList" => $productsDetails,
+            ],
             "captureDay" => "0",
             "captureMode" => "AUTHOR_CAPTURE",
         ];
+    }
+
+    /**
+     * Get cart products details
+     *
+     * @param Order $order
+     * @return array
+     */
+    final private function get_cart_products_details(Order $order): array
+    {
+        $products = $order->getProductsDetail();
+        $productsDetails = [];
+        foreach ($products as $product) {
+            $productsDetails['shoppingCartItem'][] = [
+                "productName" => $product['product_name'],
+                "productQuantity" => $product['product_quantity'],
+                "productCode" => $product['product_reference'],
+            ];
+        }
+        return $productsDetails;
     }
 
     /**
