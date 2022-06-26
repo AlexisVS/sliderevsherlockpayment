@@ -13,7 +13,8 @@
                            for="instalmentPaymentNumberOfMonth">{$instalmentPaymentNumberOfMonth}</label>
 
                     <select class="js-instalment-form-select mr-2 mb-1" name="instalmentPaymentNumberOfMonth" id="">
-                        {for $i = 1; $i <= 12; $i++}
+                        {* Minimum i=2 *}
+                        {for $i = 2; $i <= 12; $i++}
                             <option value="{$i}">{$i}</option>
                         {/for}
                     </select>
@@ -23,7 +24,7 @@
             </div>
         </div>
         <div class="row pt-2">
-            <div  style="display: flex ">
+            <div style="display: flex ">
                 <p class="h2 text-gray-dark  mr-1">{$labelCount}:</p>
                 <p class="h2 bold js-instalment-form-amount">{$amount}</p>
                 <p class="h2 bold">€</p>

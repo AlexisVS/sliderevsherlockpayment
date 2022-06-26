@@ -248,8 +248,9 @@ class SliderevsherlockpaymentValidationModuleFrontController extends ModuleFront
         if ('complete' === Tools::getValue('instalmentPayment')) {
             $requestData['paymentPattern'] = 'INSTALMENT';
             $number = intval(Tools::getValue('instalmentPaymentNumberOfMonth'));
-            $datesList = $this->set_datesList_instalment_payment($number);
             $transactionReferenceList = $this->set_transactionReferencesList_instalment_payment($number, $referenceOrder);
+            $requestData['transactionReference'] .= 'part0on' . $number;
+            $datesList = $this->set_datesList_instalment_payment($number);
             $amountsList = $this->set_amountsList_instalment_payment($amount, $number);
             $s10TransactionIdsList = '';
 
@@ -309,6 +310,29 @@ class SliderevsherlockpaymentValidationModuleFrontController extends ModuleFront
     }
 
     /**
+     * Set transaction references list for instalment payment
+     *
+     * @param $number
+     * @param $transactionReference
+     * @return array
+     */
+    final private function set_transactionReferencesList_instalment_payment($number, $transactionReference): array
+    {
+        // TODO: PAYMENT_SEVERAL_TIMES
+        $transactionReferencesList = [];
+
+        for ($i = 0; $i < $number; $i++) {
+            if ($i === 0) {
+                $transactionReferencesList[] = $transactionReference . 'part0on' . $number;
+            } else {
+                $transactionReferencesList[] = $transactionReference . 'part' . $i . 'on' . $number;
+            }
+        }
+
+        return $transactionReferencesList;
+    }
+
+    /**
      * Set dates list for instalment payment
      *
      * @param int $numberOfPayment
@@ -326,28 +350,6 @@ class SliderevsherlockpaymentValidationModuleFrontController extends ModuleFront
         }
 
         return $datesList;
-    }
-
-    /**
-     * Set transaction references list for instalment payment
-     *
-     * @param $number
-     * @param $transactionReference
-     * @return string
-     */
-    final private function set_transactionReferencesList_instalment_payment($number, $transactionReference): string
-    {
-        // TODO: Problème ici
-        $transactionReferencesList = '';
-
-        for ($i = 0; $i < $number; $i++) {
-            if ($i === 0) {
-                $transactionReferencesList .= $transactionReference;
-            }
-            $transactionReferencesList .= ',' . $transactionReference . $i;
-        }
-
-        return $transactionReferencesList;
     }
 
     /**
