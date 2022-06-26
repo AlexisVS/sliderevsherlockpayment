@@ -1,7 +1,7 @@
 //V TODO: 1. Déduire le prix du panier des réduction + des code promo + des taxes
 //V TODO: 2. Géré Comment faire pour les devise en fonction des pays donc la devise en fonction du pays car pour le moment seul la france y est autorisé
-// TODO: 3. Envoyer tous les informations de commande dans la requete
-// TODO: 4. Mettre en place le payment en plusieurs fois
+//V TODO: 3. Envoyer tous les informations de commande dans la requete
+//V TODO: 4. Mettre en place le payment en plusieurs fois
 // TODO: 5. Faire le système de translation
 // TODO: 6. Mettre en style la page d'erreur du payment
 // TODO: 7. Mettre en style la paypage de sherlock's
