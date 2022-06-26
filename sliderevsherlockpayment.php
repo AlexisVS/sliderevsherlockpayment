@@ -352,14 +352,14 @@ This module has been developed by AlexisVS employed in the SLIDE r.e.v society')
         if (!$this->checkCurrency($params['cart'])) {
             return null;
         }
-        $option = new PaymentOption();
-        $option
+        $instantPayment = new PaymentOption();
+        $instantPayment
             ->setCallToActionText($this->l('sherlock payment'))
             ->setLogo($this->getPathUri() . 'logo.png')
 
 
             // Action in /controllers/front/validation
-            ->setAction($this->context->link->getModuleLink($this->name, 'validation', [], true));
+            ->setAction($this->context->link->getModuleLink($this->name, 'validation', ['instalmentPayment' => 'false'], true));
         /* TODO:: If does add additional input in payment button form
               ->setInputs([
                     'token' => [
@@ -371,8 +371,16 @@ This module has been developed by AlexisVS employed in the SLIDE r.e.v society')
             and for add template at the bottom of the button
             ->setAdditionalInformation($this->context->smarty->fetch('module:sliderevsherlockpayment/views/templates/front/payment_infos.tpl'))
         */
+
+        $instalmentPayment = new PaymentOption();
+        $instalmentPayment
+            ->setCallToActionText($this->l('sherlock payment in installment'))
+            ->setLogo($this->getPathUri() . 'logo.png')
+            ->setAction($this->context->link->getModuleLink($this->name, 'validation', ['instalmentPayment' => 'true'], true));
+
         return [
-            $option
+            $instantPayment,
+            $instalmentPayment
         ];
     }
 

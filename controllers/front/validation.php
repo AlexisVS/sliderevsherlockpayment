@@ -23,59 +23,93 @@ class SliderevsherlockpaymentValidationModuleFrontController extends ModuleFront
      */
     public function postProcess()
     {
+
         $cart = $this->context->cart;
         if (!Validate::isLoadedObject($cart)) {
             throw new sliderevsherlockpaymentException('No cart found', sliderevsherlockpaymentException::PRESTASHOP_CART_NOT_FOUND);
         }
 
-        /** @var sliderevsherlockpayment $module */
-        $module = Module::getInstanceByName("sliderevsherlockpayment");
-        if (!Validate::isLoadedObject($module)) {
-            throw new sliderevsherlockpaymentException('No module found', sliderevsherlockpaymentException::PRESTASHOP_MODULE_NOT_FOUND);
+        // If link uri Param has instalmentPayment, then we need to redirect to the instalment payment form  page.
+        if ('true' === Tools::getValue('instalmentPayment')) {
+            $this->render_instalment_payment_form($cart);
         }
 
-        // redirect if missed information
-        if ($cart->id_customer == 0 || $cart->id_address_delivery == 0 || $cart->id_address_invoice == 0 || !$this->module->active) {
-            Tools::redirect('index.php?controller=order&step=1');
-        }
-
-        // Check that this payment option is still available in case the customer changed his address just before the end of the checkout process
-        $authorized = false;
-        foreach (Module::getPaymentModules() as $module_item) {
-            if ($module_item['name'] == 'sliderevsherlockpayment') {
-                $authorized = true;
-                break;
+        if ('false' === Tools::getValue('instalmentPayment') || 'complete' === Tools::getValue('instalmentPayment')) {
+            /** @var sliderevsherlockpayment $module */
+            $module = Module::getInstanceByName("sliderevsherlockpayment");
+            if (!Validate::isLoadedObject($module)) {
+                throw new sliderevsherlockpaymentException('No module found', sliderevsherlockpaymentException::PRESTASHOP_MODULE_NOT_FOUND);
             }
-        }
 
-        if (!$authorized) {
-            die($this->module->l('This payment method is not available.', 'validation'));
+            // redirect if missed information
+            if ($cart->id_customer == 0 || $cart->id_address_delivery == 0 || $cart->id_address_invoice == 0 || !$this->module->active) {
+                Tools::redirect('index.php?controller=order&step=1');
+            }
+
+            // Check that this payment option is still available in case the customer changed his address just before the end of the checkout process
+            $authorized = false;
+            foreach (Module::getPaymentModules() as $module_item) {
+                if ($module_item['name'] == 'sliderevsherlockpayment') {
+                    $authorized = true;
+                    break;
+                }
+            }
+
+            if (!$authorized) {
+                die($this->module->l('This payment method is not available.', 'validation'));
+            }
+
+            $this->context->smarty->assign([
+                'params' => $_REQUEST,
+            ]);
+
+            $customer = new Customer($cart->id_customer);
+            if (!Validate::isLoadedObject($customer)) {
+                Tools::redirect('index.php?controller=order&step=1');
+            }
+
+            //Validate Order
+            $amount_paid = $cart->getOrderTotal();
+            $module->validateOrder(
+                $cart->id,
+                intval(Configuration::get('SLIDEREVSHERLOCKPAYMENT_ORDER_STATE_PENDING_ID')),
+                $amount_paid,
+                $module->name,
+                'sherlock\'s payement valider',
+                [],
+                null,
+                false,
+                $customer->secure_key,
+            );
+
+            $this->process_payment();
         }
+    }
+
+    /**
+     * Render instalment payment form page
+     * @throws PrestaShopException
+     * @throws Exception
+     */
+    final private function render_instalment_payment_form(Cart $cart): void
+    {
+        $redirectionUrl = $this->context->link->getModuleLink('sliderevsherlockpayment', 'validation', ['instalmentPayment' => 'complete'], true);
+        $title = $this->trans('Select the number of month for your instalment payment', [], 'Modules:Sliderevsherlockpayment.validation');
+        $instalmentPaymentNumberOfMonth = $this->trans('Choose number of month', [], 'Module:Sliderevsherlockpayment.validation');
+        $submitButtonText = $this->trans('checkout', [], 'Module:Sliderevsherlockpayment.validation');
+        $labelCount = $this->trans('Price per month', [], 'Module:Sliderevsherlockpayment.validation');
+        $amount = $cart->getOrderTotal();
 
         $this->context->smarty->assign([
-            'params' => $_REQUEST,
+            'redirectionUrl' => $redirectionUrl,
+            'title' => $title,
+            'instalmentPaymentNumberOfMonth' => $instalmentPaymentNumberOfMonth,
+            'submitButtonText' => $submitButtonText,
+            'labelCount' => $labelCount,
+            'amount' => $amount,
         ]);
 
-        $customer = new Customer($cart->id_customer);
-        if (!Validate::isLoadedObject($customer)) {
-            Tools::redirect('index.php?controller=order&step=1');
-        }
-
-        //Validate Order
-        $amount_paid = $cart->getOrderTotal();
-        $module->validateOrder(
-            $cart->id,
-            intval(Configuration::get('SLIDEREVSHERLOCKPAYMENT_ORDER_STATE_PENDING_ID')),
-            $amount_paid,
-            $module->name,
-            'sherlock\'s payement valider',
-            [],
-            null,
-            false,
-            $customer->secure_key,
-        );
-
-        $this->process_payment();
+        $this->setTemplate('module:sliderevsherlockpayment/views/templates/front/instalment_form.tpl');
     }
 
     /**
@@ -87,10 +121,12 @@ class SliderevsherlockpaymentValidationModuleFrontController extends ModuleFront
      */
     public function process_payment(): void
     {
+
         $paymentValidationResponse = $this->process_payment_request();
         $computedResponseSeal = $paymentValidationResponse['computedResponseSeal'];
         $responseTable = $paymentValidationResponse['responseTable'];
 
+        dump($responseTable);
         if (strcmp($computedResponseSeal, $responseTable['seal']) == 0) {
             if ($responseTable['redirectionStatusCode'] == '00') {
                 $this->context->smarty->assign([
@@ -157,7 +193,7 @@ class SliderevsherlockpaymentValidationModuleFrontController extends ModuleFront
             throw new sliderevsherlockpaymentException('No customer found', sliderevsherlockpaymentException::PRESTASHOP_CUSTOMER_NOT_FOUND);
         }
 
-        $amount = number_format(((float)$cart->getOrderTotal()), 2, '', '.');
+        $amount = $this->convert_amount_for_sherlock((float)$cart->getOrderTotal());
         $currencyCode = $this->context->currency->iso_code_num;
 
         $params = [
@@ -184,35 +220,63 @@ class SliderevsherlockpaymentValidationModuleFrontController extends ModuleFront
 
         $productsDetails = $this->get_cart_products_details($order);
 
+        $requestData = [
+            'amount' => $amount,
+            'currencyCode' => $currencyCode,
+            'customerAddress' => [
+                'addressAdditional1' => $customerAddress['address1'],
+                'city' => $customerAddress['city'],
+                'zipCode' => $customerAddress['postcode'],
+                'country' => strtoupper(substr($customerAddress['country'], 3)),
+                'state' => $customerState,
+            ],
+            'customerContact' => [
+                'email' => $customer->email,
+                'firstname' => $customer->firstname,
+                'lastname' => $customer->lastname,
+                'phone' => $customerAddress['phone'],
+            ],
+            'interfaceVersion' => 'IR_WS_2.42',
+            'merchantId' => $merchantId,
+            'normalReturnUrl' => $normalReturn,
+            'orderChannel' => 'INTERNET',
+            'orderId' => $order->id,
+            'shoppingCartDetail' => $productsDetails,
+            'transactionReference' => $referenceOrder,
+        ];
+
+        if ('complete' === Tools::getValue('instalmentPayment')) {
+            $requestData['paymentPattern'] = 'INSTALMENT';
+            $number = intval(Tools::getValue('instalmentPaymentNumberOfMonth'));
+            $datesList = $this->set_datesList_instalment_payment($number);
+            $transactionReferenceList = $this->set_transactionReferencesList_instalment_payment($number, $referenceOrder);
+            $amountsList = $this->set_amountsList_instalment_payment($amount, $number);
+            $s10TransactionIdsList = '';
+
+            $requestData['instalmentData'] = [
+                'number' => $number,
+                'datesList' => $datesList,
+                'transactionReferencesList' => $transactionReferenceList,
+                'amountsList' => $amountsList,
+//                's10TransactionIdsList' => $s10TransactionIdsList
+            ];
+
+        }
+
 
         // ! Les champs de la request doivent être ranger par ordre alphabétique mise à part les captures
-        return [
-            "amount" => $amount,
-            "currencyCode" => $currencyCode,
-            "interfaceVersion" => "IR_WS_2.42",
-            "merchantId" => $merchantId,
-            "normalReturnUrl" => $normalReturn,
-            "orderChannel" => "INTERNET",
-            "transactionReference" => $referenceOrder,
-            "customerAddress" => [
-                "addressAdditional1" => $customerAddress['address1'],
-                "city" => $customerAddress['city'],
-                "country" => strtoupper(substr($customerAddress['country'], 0, 3)),
-                "state" => $customerState,
-                "zipCode" => $customerAddress['postcode'],
-            ],
-            "customerContact" => [
-                "email" => $customer->email,
-                "firstname" => $customer->firstname,
-                "lastname" => $customer->lastname,
-            ],
-            "orderId" => $module->currentOrder,
-            "shoppingCartDetail" => [
-                "shoppingCartItemList" => $productsDetails,
-            ],
-            "captureDay" => "0",
-            "captureMode" => "AUTHOR_CAPTURE",
-        ];
+        return $requestData;
+    }
+
+    /**
+     * Convert amount for sherlock
+     *
+     * @param $amount
+     * @return string
+     */
+    final private function convert_amount_for_sherlock($amount): string
+    {
+        return number_format(((float)$amount), 2, '', '.');
     }
 
     /**
@@ -227,7 +291,7 @@ class SliderevsherlockpaymentValidationModuleFrontController extends ModuleFront
         $productsDetails = [];
 
         foreach ($products as $product) {
-            $productsDetails[] = [
+            $productsDetails['shoppingCartItemList'][] = [
                 "productName" => $this->format_string_ANU_255($product['product_name']),
                 "productQuantity" => intval($product['product_quantity']),
                 "productCode" => $this->format_string_ANU_255($product['product_reference']),
@@ -242,6 +306,74 @@ class SliderevsherlockpaymentValidationModuleFrontController extends ModuleFront
     final private function format_string_ANU_255(string $string): string
     {
         return preg_replace('/\W+/', ' ', $string);
+    }
+
+    /**
+     * Set dates list for instalment payment
+     *
+     * @param int $numberOfPayment
+     * @return array
+     * @throws Exception
+     */
+    final private function set_datesList_instalment_payment(int $numberOfPayment): array
+    {
+        $datesList = [];
+        $date = new DateTime('now');
+
+        for ($i = 0; $i < $numberOfPayment; $i++) {
+            $datArr = new DateTime($date->format('Ymd'));
+            $datesList[] = $datArr->modify("+$i month")->format('Ymd');
+        }
+
+        return $datesList;
+    }
+
+    /**
+     * Set transaction references list for instalment payment
+     *
+     * @param $number
+     * @param $transactionReference
+     * @return string
+     */
+    final private function set_transactionReferencesList_instalment_payment($number, $transactionReference): string
+    {
+        // TODO: Problème ici
+        $transactionReferencesList = '';
+
+        for ($i = 0; $i < $number; $i++) {
+            if ($i === 0) {
+                $transactionReferencesList .= $transactionReference;
+            }
+            $transactionReferencesList .= ',' . $transactionReference . $i;
+        }
+
+        return $transactionReferencesList;
+    }
+
+    /**
+     * Set amounts list for instalment payment
+     *
+     * @param $amount
+     * @param $numberOfPayment
+     * @return array
+     */
+    final private function set_amountsList_instalment_payment($amount, $numberOfPayment): array
+    {
+        /**
+         * exemple
+         * $amount = 100
+         * $numberOfPayment = 6
+         *
+         */
+        $amountsList = [];
+        for ($i = 0; $i < $numberOfPayment; $i++) {
+            if ($i === 0) {
+                $amountsList[] = intdiv($amount, $numberOfPayment) + $amount % $numberOfPayment;
+            } else {
+                $amountsList[] = intdiv($amount, $numberOfPayment);
+            }
+        }
+        return $amountsList;
     }
 
     /**
