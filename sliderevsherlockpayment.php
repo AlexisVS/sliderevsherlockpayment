@@ -42,7 +42,7 @@ class Sliderevsherlockpayment extends PaymentModule
     {
         $this->name = 'sliderevsherlockpayment';
         $this->tab = 'payments_gateways';
-        $this->version = '0.0.4';
+        $this->version = '0.0.6';
         $this->author = 'AlexisVS';
         $this->need_instance = 0;
         $this->controllers = ['paymentResponse', 'validation'];
@@ -54,10 +54,9 @@ class Sliderevsherlockpayment extends PaymentModule
 
         parent::__construct();
 
-        $this->displayName = $this->l('SLIDE r.e.v sherlock\'s payment');
-        $this->description = $this->l('Sherlock\'s is a collection solution for professionals, which secures payments received by credit card on the Internet.
-
-This module has been developed by AlexisVS employed in the SLIDE r.e.v society');
+        $this->displayName = $this->trans('SLIDE r.e.v sherlock\'s payment', [], 'Modules.Sliderevsherlockpayment.Sliderevsherlockpayment.php');
+        $this->description = $this->trans('Sherlock\'s is a solution for professionals, which secures payments received by credit card on the Internet.
+This module has been developed by AlexisVS employed in the SLIDE r.e.v society', [], 'Modules.Sliderevsherlockpayment.Sliderevsherlockpayment.php');
 
         $this->limited_countries = $this->get_iso_code_countries_europe();
 
@@ -82,20 +81,30 @@ This module has been developed by AlexisVS employed in the SLIDE r.e.v society')
     }
 
     /**
+     * Activate new translation system
+     *
+     * @see PaymentModule::isUsingNewTranslationSystem()
+     */
+    public function isUsingNewTranslationSystem(): bool
+    {
+        return true;
+    }
+
+    /**
      * Don't forget to create update methods if needed:
      * http://doc.prestashop.com/display/PS16/Enabling+the+Auto-Update
      */
     public function install(): bool
     {
         if (extension_loaded('curl') == false) {
-            $this->_errors[] = $this->l('You have to enable the cURL extension on your server to install this module');
+            $this->_errors[] = $this->trans('You have to enable the cURL extension on your server to install this module', [], 'Modules.Sliderevsherlockpayment.Sliderevsherlockpayment.php');
             return false;
         }
 
         $iso_code = Country::getIsoById(Configuration::get('PS_COUNTRY_DEFAULT'));
 
         if (in_array($iso_code, $this->limited_countries) == false) {
-            $this->_errors[] = $this->l('This module is not available in your country');
+            $this->_errors[] = $this->trans('This module is not available in your country', [], 'Modules.Sliderevsherlockpayment.Sliderevsherlockpayment.php');
             return false;
         }
 
@@ -218,13 +227,13 @@ This module has been developed by AlexisVS employed in the SLIDE r.e.v society')
         return array(
             'form' => array(
                 'legend' => array(
-                    'title' => $this->l('Settings'),
+                    'title' => $this->trans('Settings', [], 'Modules.Sliderevsherlockpayment.Sliderevsherlockpayment.php'),
                     'icon' => 'icon-cogs',
                 ),
                 'input' => array(
                     array(
                         'type' => 'select',
-                        'label' => $this->l('Choose order states for pending order'),
+                        'label' => $this->trans('Choose order states for pending order', [], 'Modules.Sliderevsherlockpayment.Sliderevsherlockpayment.php'),
                         'name' => 'SLIDEREVSHERLOCKPAYMENT_ORDER_STATE_PENDING_ID',
                         'required' => true,
                         'options' => array(
@@ -235,20 +244,20 @@ This module has been developed by AlexisVS employed in the SLIDE r.e.v society')
                     ),
                     array(
                         'type' => 'switch',
-                        'label' => $this->l('Test mode'),
+                        'label' => $this->trans('Test mode', [], 'Modules.Sliderevsherlockpayment.Sliderevsherlockpayment.php'),
                         'name' => 'SLIDEREVSHERLOCKPAYMENT_TEST_MODE',
                         'is_bool' => true,
-                        'desc' => $this->l('Use this module in test mode'),
+                        'desc' => $this->trans('Use this module in test mode', [], 'Modules.Sliderevsherlockpayment.Sliderevsherlockpayment.php'),
                         'values' => array(
                             array(
                                 'id' => 'active_on',
                                 'value' => true,
-                                'label' => $this->l('Enabled')
+                                'label' => $this->trans('Enabled', [], 'Modules.Sliderevsherlockpayment.Sliderevsherlockpayment.php')
                             ),
                             array(
                                 'id' => 'active_off',
                                 'value' => false,
-                                'label' => $this->l('Disabled')
+                                'label' => $this->trans('Disabled', [], 'Modules.Sliderevsherlockpayment.Sliderevsherlockpayment.php')
                             )
                         ),
                     ),
@@ -256,50 +265,50 @@ This module has been developed by AlexisVS employed in the SLIDE r.e.v society')
 //                        'col' => 3,
                         'type' => 'text',
 //                        'prefix' => '<i class="icon icon-envelope"></i>',
-//                        'desc' => $this->l('Enter a valid test merchant ID'),
+//                        'desc' => $this->trans('Enter a valid test merchant ID', [], 'Modules.Sliderevsherlockpayment.Sliderevsherlockpayment.php'),
                         'name' => 'SLIDEREVSHERLOCKPAYMENT_TEST_MERCHANT_ID',
-                        'label' => $this->l('Test merchant ID'),
+                        'label' => $this->trans('Test merchant ID', [], 'Modules.Sliderevsherlockpayment.Sliderevsherlockpayment.php'),
                     ),
                     array(
                         'type' => 'text',
                         'name' => 'SLIDEREVSHERLOCKPAYMENT_TEST_SECRET_KEY',
-                        'label' => $this->l('Test secret key'),
+                        'label' => $this->trans('Test secret key', [], 'Modules.Sliderevsherlockpayment.Sliderevsherlockpayment.php'),
                     ),
                     array(
                         'type' => 'text',
                         'name' => 'SLIDEREVSHERLOCKPAYMENT_TEST_KEY_VERSION',
-                        'label' => $this->l('Test key version'),
+                        'label' => $this->trans('Test key version', [], 'Modules.Sliderevsherlockpayment.Sliderevsherlockpayment.php'),
                     ),
                     array(
                         'type' => 'text',
                         'name' => 'SLIDEREVSHERLOCKPAYMENT_POST_REQUEST_DEV_MODE',
-                        'label' => $this->l('Post request in development mode')
+                        'label' => $this->trans('Post request in development mode', [], 'Modules.Sliderevsherlockpayment.Sliderevsherlockpayment.php')
                     ),
                     array(
 //                        'col' => 3,
                         'type' => 'text',
-//                        'desc' => $this->l('Enter a valid  merchant ID'),
+//                        'desc' => $this->trans('Enter a valid  merchant ID', [], 'Modules.Sliderevsherlockpayment.Sliderevsherlockpayment.php'),
                         'name' => 'SLIDEREVSHERLOCKPAYMENT_MERCHANT_ID',
-                        'label' => $this->l('Merchant ID'),
+                        'label' => $this->trans('Merchant ID', [], 'Modules.Sliderevsherlockpayment.Sliderevsherlockpayment.php'),
                     ),
                     array(
                         'type' => 'text',
                         'name' => 'SLIDEREVSHERLOCKPAYMENT_SECRET_KEY',
-                        'label' => $this->l('Secret key'),
+                        'label' => $this->trans('Secret key', [], 'Modules.Sliderevsherlockpayment.Sliderevsherlockpayment.php'),
                     ),
                     array(
                         'type' => 'text',
                         'name' => 'SLIDEREVSHERLOCKPAYMENT_KEY_VERSION',
-                        'label' => $this->l('Key version'),
+                        'label' => $this->trans('Key version', [], 'Modules.Sliderevsherlockpayment.Sliderevsherlockpayment.php'),
                     ),
                     array(
                         'type' => 'text',
                         'name' => 'SLIDEREVSHERLOCKPAYMENT_POST_REQUEST_PROD_MODE',
-                        'label' => $this->l('Post request in production mode')
+                        'label' => $this->trans('Post request in production mode', [], 'Modules.Sliderevsherlockpayment.Sliderevsherlockpayment.php')
                     ),
                 ),
                 'submit' => array(
-                    'title' => $this->l('Save'),
+                    'title' => $this->trans('Save', [], 'Modules.Sliderevsherlockpayment.Sliderevsherlockpayment.php'),
                 ),
             )
         );
@@ -354,7 +363,7 @@ This module has been developed by AlexisVS employed in the SLIDE r.e.v society')
         }
         $instantPayment = new PaymentOption();
         $instantPayment
-            ->setCallToActionText($this->l('sherlock payment'))
+            ->setCallToActionText($this->trans("sherlock's payment", [], 'Modules.Sliderevsherlockpayment.Sliderevsherlockpayment.php'))
             ->setLogo($this->getPathUri() . 'logo.png')
 
 
@@ -374,7 +383,7 @@ This module has been developed by AlexisVS employed in the SLIDE r.e.v society')
 
         $instalmentPayment = new PaymentOption();
         $instalmentPayment
-            ->setCallToActionText($this->l('sherlock payment in installment'))
+            ->setCallToActionText($this->trans('sherlock payment in installment', [], 'Modules.Sliderevsherlockpayment.Sliderevsherlockpayment.php'))
             ->setLogo($this->getPathUri() . 'logo.png')
             ->setAction($this->context->link->getModuleLink($this->name, 'validation', ['instalmentPayment' => 'true'], true));
 

@@ -2,13 +2,12 @@
 <module>
     <name>sliderevsherlockpayment</name>
     <displayName><![CDATA[SLIDE r.e.v sherlock&#039;s payment]]></displayName>
-    <version><![CDATA[0.0.4]]></version>
-    <description><![CDATA[Sherlock&#039;s is a collection solution for professionals, which secures payments received by credit card on the Internet.
-
+    <version><![CDATA[0.0.6]]></version>
+    <description><![CDATA[Sherlock&#039;s is a solution for professionals, which secures payments received by credit card on the Internet.
 This module has been developed by AlexisVS employed in the SLIDE r.e.v society]]></description>
     <author><![CDATA[AlexisVS]]></author>
     <tab><![CDATA[payments_gateways]]></tab>
     <is_configurable>1</is_configurable>
     <need_instance>0</need_instance>
-	<limited_countries>FR</limited_countries>
+	<limited_countries></limited_countries>
 </module>

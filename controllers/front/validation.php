@@ -56,7 +56,7 @@ class SliderevsherlockpaymentValidationModuleFrontController extends ModuleFront
             }
 
             if (!$authorized) {
-                die($this->module->l('This payment method is not available.', 'validation'));
+                die($this->trans('This payment method is not available.', [], 'Modules.Sliderevsherlockpayment.Validation.php'));
             }
 
             $this->context->smarty->assign([
@@ -75,7 +75,7 @@ class SliderevsherlockpaymentValidationModuleFrontController extends ModuleFront
                 intval(Configuration::get('SLIDEREVSHERLOCKPAYMENT_ORDER_STATE_PENDING_ID')),
                 $amount_paid,
                 $module->name,
-                'sherlock\'s payement valider',
+                'sherlock\'s payement',
                 [],
                 null,
                 false,
@@ -94,10 +94,10 @@ class SliderevsherlockpaymentValidationModuleFrontController extends ModuleFront
     final private function render_instalment_payment_form(Cart $cart): void
     {
         $redirectionUrl = $this->context->link->getModuleLink('sliderevsherlockpayment', 'validation', ['instalmentPayment' => 'complete'], true);
-        $title = $this->trans('Select the number of month for your instalment payment', [], 'Modules:Sliderevsherlockpayment.validation');
-        $instalmentPaymentNumberOfMonth = $this->trans('Choose number of month', [], 'Module:Sliderevsherlockpayment.validation');
-        $submitButtonText = $this->trans('checkout', [], 'Module:Sliderevsherlockpayment.validation');
-        $labelCount = $this->trans('Price per month', [], 'Module:Sliderevsherlockpayment.validation');
+        $title = $this->trans('Select the number of month for your instalment payment', [], 'Modules.Sliderevsherlockpayment.Validation.php');
+        $instalmentPaymentNumberOfMonth = $this->trans('Choose number of month', [], 'Modules.Sliderevsherlockpayment.Validation.php');
+        $submitButtonText = $this->trans('checkout', [], 'Modules.Sliderevsherlockpayment.Validation.php');
+        $labelCount = $this->trans('Price per month', [], 'Modules.Sliderevsherlockpayment.Validation.php');
         $amount = $cart->getOrderTotal();
 
         $this->context->smarty->assign([
@@ -141,7 +141,7 @@ class SliderevsherlockpaymentValidationModuleFrontController extends ModuleFront
             return;
         }
         $this->context->smarty->assign([
-            'error' => $this->module->l('An error occurred during the payment process')
+            'error' => $this->trans('An error occurred during the payment process', [], 'Modules.Sliderevsherlockpayment.Validation.php')
         ]);
         $this->setTemplate('module:sliderevsherlockpayment/views/templates/front/payment_error.tpl');
     }

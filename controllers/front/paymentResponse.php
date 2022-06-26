@@ -58,7 +58,7 @@ class SliderevsherlockpaymentPaymentResponseModuleFrontController extends Module
             $this->process_response_code_payment($responseData['responseCode']);
         } else {
             $this->set_order_status_to_error();
-            $this->context->smarty->assign('error', $this->module->l('Payment error. The order has been canceled.'));
+            $this->context->smarty->assign('error', $this->trans('Payment error. The order has been canceled.', [], 'Modules.Sliderevsherlockpayment.Paymentresponse.php'));
             $this->setTemplate('module:sliderevsherlockpayment/views/templates/front/payment_error.tpl');
         }
     }
