@@ -83,15 +83,6 @@ class sealCalculation
      */
     private function compute_seal($hmac256, $data, $secretKey)
     {
-//        $serverEncoding = mb_internal_encoding();
-
-//        if (strcmp($serverEncoding, "UTF-8") == 0) {
-//            $dataUtf8 = $data;
-//            $secretKeyUtf8 = $secretKey;
-//        } else {
-//            $dataUtf8 = iconv($serverEncoding, "UTF-8", $data);
-//            $secretKeyUtf8 = iconv($serverEncoding, "UTF-8", $secretKey);
-//        }
         if ($hmac256) {
             $seal = hash_hmac('sha256', $data, $secretKey);
         } else {
@@ -121,7 +112,6 @@ class sealCalculation
      */
     public function valueResearch($value): array
     {
-//        $this->singleDimArray;
         $this->singleDimArray[] = $value;
         return $this->singleDimArray;
     }

@@ -25,7 +25,7 @@
         </div>
         <div class="row pt-2">
             <div style="display: flex ">
-                <p class="h2 text-gray-dark  mr-1">{$labelCount}:</p>
+                <p class="h2 text-gray-dark  mr-1 sliderevsherlockpayment_red">{$labelCount}:</p>
                 <p class="h2 bold js-instalment-form-amount">{$amount}</p>
                 <p class="h2 bold">€</p>
             </div>
